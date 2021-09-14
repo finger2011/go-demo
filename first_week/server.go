@@ -11,16 +11,21 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This is home path: %s", r.URL.Path[1:])
+	fmt.Fprintf(w, "This is home path: %s\n", r.URL.Path[1:])
+	queryParams(w, r)
+	getHTTPHost(w, r)
+	getHTTPHeader(w, r)
+	getHTTPForm(w, r)
 }
 
 func user(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This is user path: %s", r.URL.Path[2:])
+	fmt.Fprintf(w, "This is user path: %s\n", r.URL.Path[2:])
 	readHTTPBody(w, r)
 }
 
 func order(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This is order path: %s", r.URL.Path[2:])
+	fmt.Fprintf(w, "This is order path: %s\n", r.URL.Path[2:])
+	getHTTPBody(w, r)
 }
 
 func main() {
