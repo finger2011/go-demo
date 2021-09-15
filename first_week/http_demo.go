@@ -1,57 +1,57 @@
 package main
 
 import (
+	"finger2011/first-week/web"
 	"fmt"
 	"io"
-	"net/http"
 )
 
 //ReadHTTPBody test function
-func readHTTPBody(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
+func readHTTPBody(con *web.Context) {
+	body, err := io.ReadAll(con.R.Body)
 	if err != nil {
-		fmt.Fprintf(w, "first read body failed: %v\n", err)
+		fmt.Fprintf(con.W, "first read body failed: %v\n", err)
 		return
 	}
-	fmt.Fprintf(w, "first data from body: %v\n", body)
+	fmt.Fprintf(con.W, "first data from body: %v\n", body)
 
-	body, err = io.ReadAll(r.Body)
+	body, err = io.ReadAll(con.R.Body)
 
 	if err != nil {
-		fmt.Fprintf(w, "second read body failed: %v\n", err)
+		fmt.Fprintf(con.W, "second read body failed: %v\n", err)
 		return
 	}
-	fmt.Fprintf(w, "second data from body: %s; and data length:%d\n", string(body), len(body))
+	fmt.Fprintf(con.W, "second data from body: %s; and data length:%d\n", string(body), len(body))
 }
 
-func getHTTPBody(w http.ResponseWriter, r *http.Request) {
-	if r.GetBody == nil {
-		fmt.Fprintf(w, "get body is nil\n")
+func getHTTPBody(con *web.Context) {
+	if con.R.GetBody == nil {
+		fmt.Fprintf(con.W, "get body is nil\n")
 	} else {
-		fmt.Fprintf(w, "get body is not nil\n")
+		fmt.Fprintf(con.W, "get body is not nil\n")
 	}
 }
 
-func queryParams(w http.ResponseWriter, r *http.Request) {
-	uri := r.URL.Query()
-	fmt.Fprintf(w, "query param:%v\n", uri)
+func queryParams(con *web.Context) {
+	uri := con.R.URL.Query()
+	fmt.Fprintf(con.W, "query param:%v\n", uri)
 }
 
-func getHTTPHost(w http.ResponseWriter, r *http.Request) {
-	host := r.Host
-	fmt.Fprintf(w, "host:%s\n", host)
+func getHTTPHost(con *web.Context) {
+	host := con.R.Host
+	fmt.Fprintf(con.W, "host:%s\n", host)
 }
 
-func getHTTPHeader(w http.ResponseWriter, r *http.Request) {
-	header := r.Header
-	fmt.Fprintf(w, "host:%s\n", header)
+func getHTTPHeader(con *web.Context) {
+	header := con.R.Header
+	fmt.Fprintf(con.W, "host:%s\n", header)
 }
 
-func getHTTPForm(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "before parse form:%v\n", r.Form)
-	err := r.ParseForm()
+func getHTTPForm(con *web.Context) {
+	fmt.Fprintf(con.W, "before parse form:%v\n", con.R.Form)
+	err := con.R.ParseForm()
 	if err != nil {
-		fmt.Fprintf(w, "parse form error:%v\n", err)
+		fmt.Fprintf(con.W, "parse form error:%v\n", err)
 	}
-	fmt.Fprintf(w, "after parse form:%v\n", r.Form)
+	fmt.Fprintf(con.W, "after parse form:%v\n", con.R.Form)
 }

@@ -1,9 +1,7 @@
 package web
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -12,20 +10,6 @@ type commonResponse struct {
 	Msg string
 }
 
-//Context w r
-type Context struct {
-	W http.ResponseWriter
-	R *http.Request
-}
-
-//ReadJSON read json
-func (con *Context) ReadJSON(data interface{}) error {
-	body, err := io.ReadAll(con.R.Body)
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(body, data)
-}
 
 type signupReq struct {
 	Name              string `json:"name"`
@@ -35,23 +19,21 @@ type signupReq struct {
 }
 
 //Signup signup user
-func Signup(w http.ResponseWriter, r *http.Request) {
+func Signup(con *Context) {
 	var req = &signupReq{}
-	var con = Context{
-		W: w,
-		R: r,
-	}
 	err := con.ReadJSON(req)
 	if err != nil {
 		var resp = &commonResponse{
 			BizCode: 1,
 			Msg: fmt.Sprintf("invalid request:%v", err),
 		}
-		respBytes, _ := json.Marshal(resp)
-		fmt.Fprintf(w, string(respBytes))
+		err = con.WriteJSON(1, resp)
+		if err != nil {
+
+		}
 		return
 	}
-	fmt.Fprintf(w, "%d", err)
+	fmt.Fprintf(con.W, "%d", err)
 }
 
 //Server interface
@@ -60,7 +42,7 @@ type Server interface {
 	Start(address string) error
 
 	//Route bind route rules
-	Route(patter string, handlerFunc http.HandlerFunc)
+	Route(patter string, handlerFunc func(con *Context))
 }
 
 type sdkHTTPServer struct {
@@ -71,8 +53,11 @@ func (s *sdkHTTPServer) Start(address string) error {
 	return http.ListenAndServe(address, nil)
 }
 
-func (s *sdkHTTPServer) Route(patter string, handlerFunc http.HandlerFunc) {
-	http.HandleFunc(patter, handlerFunc)
+func (s *sdkHTTPServer) Route(patter string, handlerFunc func(con *Context)) {
+	http.HandleFunc(patter, func (w http.ResponseWriter, r *http.Request)  {
+		var con = CreateContext(w, r)
+		handlerFunc(con)
+	})
 }
 
 //CreateSdkHTTPServer create a new server

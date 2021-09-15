@@ -3,41 +3,44 @@ package main
 import (
 	"finger2011/first-week/web"
 	"fmt"
-	"net/http"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, %s", r.URL.Path[1:])
+func handler(con *web.Context) {
+	fmt.Fprintf(con.W, "Hello, %s", con.R.URL.Path[1:])
 }
 
-func home(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This is home path: %s\n", r.URL.Path[1:])
-	queryParams(w, r)
-	getHTTPHost(w, r)
-	getHTTPHeader(w, r)
-	getHTTPForm(w, r)
+func home(con *web.Context) {
+	fmt.Fprintf(con.W, "This is home path: %s\n", con.R.URL.Path[1:])
+	queryParams(con)
+	getHTTPHost(con)
+	getHTTPHeader(con)
+	getHTTPForm(con)
 }
 
-func user(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This is user path\n")
-	readHTTPBody(w, r)
+func user(con *web.Context) {
+	fmt.Fprintf(con.W, "This is user path\n")
+	readHTTPBody(con)
 }
 
-func createUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This is create user path\n")
-	web.Signup(w, r)
-}
+// func createUser(con.W http.ResponseWriter, con.R *http.Request) {
+// 	fmt.Fprintf(con.W, "This is create user path\n")
+// 	var con = web.Context{
+// 		W: con.W,
+// 		R: con.R,
+// 	}
+// 	web.Signup(con)
+// }
 
-func order(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This is order path\n")
-	getHTTPBody(w, r)
+func order(con *web.Context) {
+	fmt.Fprintf(con.W, "This is order path\n")
+	getHTTPBody(con)
 }
 
 func main() {
 	server := web.CreateSdkHTTPServer("test-server")
 	server.Route("/", home)
 	server.Route("/user", user)
-	server.Route("/user/create", createUser)
+	server.Route("/user/create", web.Signup)
 	server.Route("/order", order)
 	server.Start(":8080")
 }
