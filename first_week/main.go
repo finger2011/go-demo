@@ -1,8 +1,8 @@
 package main
 
 import (
+	"finger2011/first-week/web"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -19,18 +19,25 @@ func home(w http.ResponseWriter, r *http.Request) {
 }
 
 func user(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This is user path: %s\n", r.URL.Path[2:])
+	fmt.Fprintf(w, "This is user path\n")
 	readHTTPBody(w, r)
 }
 
+func createUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "This is create user path\n")
+	web.Signup(w, r)
+}
+
 func order(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "This is order path: %s\n", r.URL.Path[2:])
+	fmt.Fprintf(w, "This is order path\n")
 	getHTTPBody(w, r)
 }
 
 func main() {
-	http.HandleFunc("/", home)
-	http.HandleFunc("/user", user)
-	http.HandleFunc("/order", order)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	server := web.CreateSdkHTTPServer("test-server")
+	server.Route("/", home)
+	server.Route("/user", user)
+	server.Route("/user/create", createUser)
+	server.Route("/order", order)
+	server.Start(":8080")
 }
