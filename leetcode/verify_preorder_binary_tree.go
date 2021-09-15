@@ -34,3 +34,22 @@ func verifyPreorder(preorder []int) bool {
     }
     return true
 }
+
+func verifyPreorder2(preorder []int) bool {
+    if len(preorder) < 2 {
+        return true
+    }
+    var stack = []int{}
+    var min = ^int(^uint(0)>>1)
+    for i := 0; i < len(preorder); i++ {
+        if preorder[i] < min {
+            return false
+        }
+		for len(stack) > 0 && preorder[i] > stack[len(stack) - 1] {
+			min = stack[len(stack) - 1]
+            stack = stack[0:len(stack) - 1]
+		}
+        stack = append(stack, preorder[i])
+    }
+    return true
+}
