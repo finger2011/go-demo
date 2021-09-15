@@ -1,39 +1,13 @@
 package web
 
 import (
-	"fmt"
 	"net/http"
 )
 
-type commonResponse struct {
-	BizCode int
-	Msg string
-}
-
-
-type signupReq struct {
-	Name              string `json:"name"`
-	Email             string `json:"email"`
-	Passward          string `json:"passward"`
-	ConfirmedPassward string `json:"confirmed_passward"`
-}
-
-//Signup signup user
-func Signup(con *Context) {
-	var req = &signupReq{}
-	err := con.ReadJSON(req)
-	if err != nil {
-		var resp = &commonResponse{
-			BizCode: 1,
-			Msg: fmt.Sprintf("invalid request:%v", err),
-		}
-		err = con.WriteJSON(1, resp)
-		if err != nil {
-
-		}
-		return
-	}
-	fmt.Fprintf(con.W, "%d", err)
+//Routable routable
+type Routable interface {
+	//Route bind route rules
+	Route(method, pattern string, handlerFunc func(con *Context))
 }
 
 //Server interface
@@ -41,28 +15,30 @@ type Server interface {
 	//Start server
 	Start(address string) error
 
-	//Route bind route rules
-	Route(patter string, handlerFunc func(con *Context))
+	Routable
 }
 
 type sdkHTTPServer struct {
-	Name string
+	Name    string
+	handler Handler
 }
 
 func (s *sdkHTTPServer) Start(address string) error {
-	return http.ListenAndServe(address, nil)
+	return http.ListenAndServe(address, s.handler)
 }
 
-func (s *sdkHTTPServer) Route(patter string, handlerFunc func(con *Context)) {
-	http.HandleFunc(patter, func (w http.ResponseWriter, r *http.Request)  {
-		var con = CreateContext(w, r)
-		handlerFunc(con)
-	})
+func (s *sdkHTTPServer) Route(method, pattern string, handlerFunc func(con *Context)) {
+	s.handler.Route(method, pattern, handlerFunc)
+	// key := s.handler.key(method, pattern)
+	// s.handler.handlers[key] = handlerFunc
 }
 
 //CreateSdkHTTPServer create a new server
 func CreateSdkHTTPServer(name string) Server {
 	return &sdkHTTPServer{
 		Name: name,
+		handler: &HandlerMap{
+			handlers: make(map[string]func(con *Context)),
+		},
 	}
 }

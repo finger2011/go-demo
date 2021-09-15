@@ -38,9 +38,9 @@ func order(con *web.Context) {
 
 func main() {
 	server := web.CreateSdkHTTPServer("test-server")
-	server.Route("/", home)
-	server.Route("/user", user)
-	server.Route("/user/create", web.Signup)
-	server.Route("/order", order)
+	server.Route("GET","/", home)
+	server.Route("GET","/user", user)
+	server.Route("PUT","/user/create", Signup)
+	server.Route("GET","/order", order)
 	server.Start(":8080")
 }
