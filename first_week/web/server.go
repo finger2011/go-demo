@@ -7,6 +7,11 @@ import (
 	"net/http"
 )
 
+type commonResponse struct {
+	BizCode int
+	Msg string
+}
+
 //Context w r
 type Context struct {
 	W http.ResponseWriter
@@ -38,7 +43,12 @@ func Signup(w http.ResponseWriter, r *http.Request) {
 	}
 	err := con.ReadJSON(req)
 	if err != nil {
-		fmt.Fprintf(w, "unmarshal body failed:%v", err)
+		var resp = &commonResponse{
+			BizCode: 1,
+			Msg: fmt.Sprintf("invalid request:%v", err),
+		}
+		respBytes, _ := json.Marshal(resp)
+		fmt.Fprintf(w, string(respBytes))
 		return
 	}
 	fmt.Fprintf(w, "%d", err)
