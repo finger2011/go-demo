@@ -6,8 +6,9 @@ import (
 )
 
 type commonResponse struct {
-	BizCode int
-	Msg     string
+	BizCode int         `json:"biz_code"`
+	Msg     string      `json:"msg"`
+	Data    interface{} `json:"data"`
 }
 
 type signupReq struct {
@@ -28,9 +29,12 @@ func Signup(con *web.Context) {
 		}
 		err = con.WriteJSON(1, resp)
 		if err != nil {
-
+			fmt.Fprintf(con.W, "write json error:%v", err)
 		}
 		return
 	}
-	fmt.Fprintf(con.W, "%d", err)
+	// fmt.Fprintf(con.W, "%d", err)
+	con.WriteJSON(200, &commonResponse{
+		Data: 123,
+	})
 }
