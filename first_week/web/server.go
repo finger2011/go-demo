@@ -21,9 +21,15 @@ type Server interface {
 type sdkHTTPServer struct {
 	Name    string
 	handler Handler
+	// root Filter
 }
 
 func (s *sdkHTTPServer) Start(address string) error {
+	// http.HandleFunc("/", func(writer http.ResponseWriter,
+	// 	request *http.Request) {
+	// 	c := CreateContext(writer, request)
+	// 	s.root(c)
+	// })
 	return http.ListenAndServe(address, s.handler)
 }
 
