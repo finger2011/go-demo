@@ -35,6 +35,10 @@ func verifyPreorder(preorder []int) bool {
     return true
 }
 
+// 局部递减，整体递增
+// 5 2 1 3 8 7 9 
+// 5 2 1递减，向下向左遍历
+// 5 8 9 递增，向下向右遍历
 func verifyPreorder2(preorder []int) bool {
     if len(preorder) < 2 {
         return true
