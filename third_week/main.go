@@ -46,13 +46,14 @@ var closed = make(chan bool, 1)
 func main() {
 	app := web.CreateApp(context.Background(), "golang")
 	group, ctx := errgroup.WithContext(app.GetContext())
+	//多个server
 	servers := []string{":8080", ":8081"}
 
 	for index, serverName := range servers {
 		serverName := serverName
 		index := index
 		var server = web.CreateSdkHTTPServer(ctx, serverName, closed)
-		//demo route
+		//路由
 		if index == 0 {
 			server.Route("GET", "/", home)
 			server.Route("GET", "/user", user)
@@ -73,21 +74,20 @@ func main() {
 		app.AddServer(server)
 	}
 	//signal 信号的注册和处理
+	// app.SetSignal([]os.Signal{}) 注册信号
 	group.Go(func() error {
 		return web.ShutDown(ctx, app, ch)
 	})
 
-	go func() {
-		time.Sleep(time.Second * 5)
-		app.RandomShutDownServer(ctx)
-	}()
-	serverClosed(app.GetContext(), app)
+	//测试：随机server shutdown掉
+	go testRandomShutDownServer(ctx, app)
+
+	//server异常退出，app退出
+	serverClosed(ctx, app)
 
 	if err := group.Wait(); err != nil {
 		fmt.Printf("server error:%v\n", err)
 		app.Stop()
-	} else {
-		fmt.Printf("server nil error:%v\n", err)
 	}
 }
 
@@ -99,8 +99,16 @@ func serverClosed(ctx context.Context, app *web.App) {
 			if ok && v {
 				break
 			}
+		case <-ctx.Done():
+			return
 		}
-		fmt.Println("check server closed")
+		// fmt.Println("check server closed")
 		app.Stop()
 	}()
+}
+
+//测试：随机server shutdown掉
+func testRandomShutDownServer(ctx context.Context, app *web.App) {
+	time.Sleep(time.Second * 5)
+	app.RandomShutDownServer(ctx)
 }

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"syscall"
 	"time"
 )
 
@@ -49,7 +48,7 @@ func DoneAllRequest() error {
 //ShutDown shut down
 func ShutDown(ctx context.Context, app *App, ch chan os.Signal) error {
 	//监听指定信号
-	signal.Notify(ch, syscall.SIGKILL, syscall.SIGINT, syscall.SIGUSR1, syscall.SIGBUS)
+	signal.Notify(ch, app.GetSignal()...)
 	select {
 	case s := <-ch:
 		fmt.Printf("get %s signal, Program Exit...\n", s)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"syscall"
 	"time"
 )
 
@@ -13,6 +14,7 @@ type App struct {
 	ctx     context.Context
 	cancel  func()
 	servers []Server
+	sigs    []os.Signal
 }
 
 //GetContext get app context
@@ -28,6 +30,16 @@ func (a App) GetName() string {
 //AddServer add server
 func (a *App) AddServer(s Server) {
 	a.servers = append(a.servers, s)
+}
+
+//SetSignal set signals
+func (a *App) SetSignal(sigs []os.Signal) {
+	a.sigs = sigs
+}
+
+//GetSignal get signals
+func (a App) GetSignal() []os.Signal {
+	return a.sigs
 }
 
 //ShutDownServer shutdown server
@@ -54,7 +66,7 @@ func (a App) Stop() error {
 	fmt.Println("stop app...")
 	//超时控制，超过1min未成功关闭，强制退出s
 	time.AfterFunc(time.Minute, func() {
-		fmt.Println("shut down timeout...")
+		fmt.Println("stop app timeout...")
 		os.Exit(-1)
 	})
 	err := GracefllExit(a.ctx)
@@ -63,20 +75,20 @@ func (a App) Stop() error {
 	}
 	a.ShutDownServer(a.ctx)
 	if a.cancel != nil {
-		fmt.Println("cancel app context...")
 		a.cancel()
-		// fmt.Println("cancel app context done...")
 	}
-	// os.Exit(0)
+	fmt.Println("stop app done...")
 	return nil
 }
 
 //CreateApp create app
 func CreateApp(ctx context.Context, name string) *App {
 	c, cancel := context.WithCancel(ctx)
+	sigs := []os.Signal{syscall.SIGKILL, syscall.SIGINT, syscall.SIGUSR1, syscall.SIGBUS}
 	return &App{
 		name:   name,
 		ctx:    c,
 		cancel: cancel,
+		sigs:   sigs,
 	}
 }
