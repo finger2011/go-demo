@@ -46,5 +46,5 @@ func main() {
 	// web.ShutDownPrepare()
 	web.ShutDown()
 
-	select {}
+	// select {}
 }
