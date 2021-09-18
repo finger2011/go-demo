@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -16,9 +17,8 @@ import (
 //4 关闭进程
 //5 超时直接关闭
 
-// type ShutDown struct {
-
-// }
+//GetSignalError get signal error
+// var GetSignalError = errors.New("get signal stop")
 
 //ShutDownPrepare 关闭server
 func ShutDownPrepare() {
@@ -47,54 +47,37 @@ func DoneAllRequest() error {
 }
 
 //ShutDown shut down
-func ShutDown() {
-	ch := make(chan os.Signal, 1)
+func ShutDown(ctx context.Context, app *App, ch chan os.Signal) error {
 	//监听指定信号
-	signal.Notify(ch, syscall.SIGKILL, syscall.SIGINT)
+	signal.Notify(ch, syscall.SIGKILL, syscall.SIGINT, syscall.SIGUSR1, syscall.SIGBUS)
 	select {
 	case s := <-ch:
 		fmt.Printf("get %s signal, Program Exit...\n", s)
-		//超时控制，超过1min未成功关闭，强制退出
-		time.AfterFunc(time.Minute, func() {
-			fmt.Println("shut down timeout...")
-			os.Exit(-1)
-		})
-		GracefllExit()
+		return errors.New("get exit signal")
+	case <-ctx.Done():
+		return ctx.Err()
 	}
-	// go func() {
-	// 	for s := range ch {
-	// 		switch s {
-	// 		case syscall.SIGKILL, syscall.SIGINT:
-	// 			fmt.Printf("get %s signal, Program Exit...\n", s)
-	// 			//超时控制，超过1min未成功关闭，强制退出
-	// 			time.AfterFunc(time.Minute, func() {
-	// 				fmt.Println("shut down timeout...")
-	// 				os.Exit(-1)
-	// 			})
-	// 			GracefllExit()
-	// 		}
-	// 	}
-	// }()
 }
 
 //GracefllExit gracefll exit
-func GracefllExit() {
-	fmt.Println("Start Exit")
-	_, cancel := context.WithTimeout(context.Background(), time.Second*30)
+func GracefllExit(ctx context.Context) error {
+	fmt.Println("Start Exit...")
 	err := DownService()
 	if err != nil {
 		fmt.Printf("down service failed:%v", err)
+		return err
 	}
 	err = RejectNewRequest()
 	if err != nil {
 		fmt.Printf("reject new request failed:%v", err)
+		return err
 	}
 	err = DoneAllRequest()
 	if err != nil {
 		fmt.Printf("done all request failed:%v", err)
+		return err
 	}
 	fmt.Println("Clean...")
-	cancel()
 	fmt.Println("End Exit")
-	os.Exit(0)
+	return nil
 }

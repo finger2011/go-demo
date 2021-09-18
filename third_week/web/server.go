@@ -2,7 +2,10 @@ package web
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	// "time"
+	// "golang.org/x/sync/errgroup"
 )
 
 //Routable 路由
@@ -14,49 +17,58 @@ type Routable interface {
 type Server interface {
 	Routable
 
-	Start(address string) error
+	Start(ctx context.Context, address string) error
 
 	Stop(ctx context.Context) error
 }
 
 type sdkHTTPServer struct {
-	Name    string
-	handler Handler
-	root    Filter
+	srv       *http.Server
+	Name      string
+	handler   Handler
+	closed    chan bool
+	err       error
+	srvClosed bool
 }
 
-func (s *sdkHTTPServer) Start(address string) error {
-	// http.HandleFunc("/", func(writer http.ResponseWriter,
-	// 	request *http.Request) {
-	// 	c := CreateContext(writer, request)
-	// 	s.root(c)
-	// })
-	return http.ListenAndServe(address, s.handler)
+func (s *sdkHTTPServer) Start(ctx context.Context, address string) error {
+	s.srv = &http.Server{Addr: address, Handler: s.handler}
+	go func() {
+		if err := s.srv.ListenAndServe(); err != nil {
+			s.err = err
+			s.srvClosed = true
+			s.closed <- true
+		}
+	}()
+	return nil
 }
 
 func (s *sdkHTTPServer) Route(method, pattern string, handlerFunc handlerFunc) {
+	// http.HandleFunc(pattern, handlerFunc)
 	s.handler.Route(method, pattern, handlerFunc)
 }
 
 func (s *sdkHTTPServer) Stop(ctx context.Context) error {
-	return nil
+	fmt.Println("stop server:" + s.Name)
+	if s.srvClosed {
+		fmt.Println("server already be closed")
+		return nil
+	}
+	var err = s.srv.Shutdown(ctx)
+	if err == nil {
+		s.srvClosed = true
+	}
+	fmt.Println("stop server end" + s.Name)
+	return err
 }
 
-// func (s *sdkHTTPServer) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-// 	// c := s.ctxPool.Get().(*Context)
-// 	// defer func() {
-// 	// 	s.ctxPool.Put(c)
-// 	// }()
-// 	// c.Reset(writer, request)
-// 	// s.root(ctx)
-// }
-
 //CreateSdkHTTPServer create a new server
-func CreateSdkHTTPServer(name string) Server {
+func CreateSdkHTTPServer(ctx context.Context, name string, closed chan bool) Server {
 	return &sdkHTTPServer{
 		Name: name,
 		handler: &HandlerRoute{
 			handlers: make(map[string]func(con *Context)),
 		},
+		closed: closed,
 	}
 }
