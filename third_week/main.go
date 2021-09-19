@@ -41,6 +41,7 @@ func mockSyscal(c *web.Context) {
 var ch = make(chan os.Signal, 1)
 
 //进程异常退出时，app退出
+//TODO:也可以考虑放入App中
 var closed = make(chan bool, 1)
 
 func main() {
@@ -49,6 +50,7 @@ func main() {
 	//多个server
 	servers := []string{":8080", ":8081"}
 
+	//启动多个server
 	for index, serverName := range servers {
 		serverName := serverName
 		index := index
@@ -63,6 +65,7 @@ func main() {
 			server.Route("GET", "/order", order)
 		}
 		group.Go(func() error {
+			fmt.Println("start server" + serverName)
 			if err := server.Start(ctx, serverName); err != nil {
 				//启动失败，直接退出
 				//Start永远返回nil，实际执行不到
@@ -71,6 +74,8 @@ func main() {
 			fmt.Println("start server done" + serverName)
 			return nil
 		})
+		//把server挂载到App上，
+		//TODO 这里可以考虑在创建app时，当做config传入
 		app.AddServer(server)
 	}
 	//signal 信号的注册和处理
@@ -80,7 +85,7 @@ func main() {
 	})
 
 	//测试：随机server shutdown掉
-	go testRandomShutDownServer(ctx, app)
+	// go testRandomShutDownServer(ctx, app)
 
 	//server异常退出，app退出
 	serverClosed(ctx, app)
@@ -104,6 +109,7 @@ func serverClosed(ctx context.Context, app *web.App) {
 		}
 		// fmt.Println("check server closed")
 		app.Stop()
+		return
 	}()
 }
 
@@ -111,4 +117,5 @@ func serverClosed(ctx context.Context, app *web.App) {
 func testRandomShutDownServer(ctx context.Context, app *web.App) {
 	time.Sleep(time.Second * 5)
 	app.RandomShutDownServer(ctx)
+	return
 }

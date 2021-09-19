@@ -49,6 +49,7 @@ func (a *App) ShutDownServer(ctx context.Context) {
 		fmt.Println("shut down server")
 		server.Stop(ctx)
 	}
+	return
 }
 
 //RandomShutDownServer 随机关闭一个server，用于测试
@@ -59,19 +60,21 @@ func (a *App) RandomShutDownServer(ctx context.Context) {
 		server.Stop(ctx)
 		break
 	}
+	return
 }
 
 //Stop stop app
 func (a App) Stop() error {
 	fmt.Println("stop app...")
-	//超时控制，超过1min未成功关闭，强制退出s
+	//超时控制，超过1min未成功关闭，强制退出
 	time.AfterFunc(time.Minute, func() {
 		fmt.Println("stop app timeout...")
-		os.Exit(-1)
+		//TODO:是否有更好的方式?
+		os.Exit(1)
 	})
-	err := GracefllExit(a.ctx)
+	err := GracefulExit(a.ctx)
 	if err != nil {
-		//可能需要重试之类的机制
+		//TODO:可能需要重试之类的机制?
 	}
 	a.ShutDownServer(a.ctx)
 	if a.cancel != nil {

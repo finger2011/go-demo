@@ -38,6 +38,7 @@ func (s *sdkHTTPServer) Start(ctx context.Context, address string) error {
 			s.err = err
 			s.srvClosed = true
 			s.closed <- true
+			return
 		}
 	}()
 	return nil
@@ -49,9 +50,9 @@ func (s *sdkHTTPServer) Route(method, pattern string, handlerFunc handlerFunc) {
 }
 
 func (s *sdkHTTPServer) Stop(ctx context.Context) error {
-	fmt.Println("stop server:" + s.Name)
+	fmt.Println("stop server" + s.Name)
 	if s.srvClosed {
-		fmt.Println("server already be closed")
+		fmt.Println("server already be closed" + s.Name)
 		return nil
 	}
 	var err = s.srv.Shutdown(ctx)
