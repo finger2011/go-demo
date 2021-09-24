@@ -3,15 +3,16 @@ package main
 import (
 	"fmt"
 )
+
 //https://leetcode-cn.com/problems/split-linked-list-in-parts/
 //leetcode 725
 
 func testSplitList() {
 	var head = new(ListNode)
-	// var k = 3
-	// var arr = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-	var k = 5
-	var arr = []int{1, 2, 3}
+	var k = 3
+	var arr = []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+	// var k = 5
+	// var arr = []int{1, 2, 3}
 	// var k = 3
 	// var arr = []int{}
 	var cur = head
@@ -21,7 +22,7 @@ func testSplitList() {
 		cur.Next = node
 		cur = cur.Next
 	}
-	var result = splitListToParts(head.Next, k)
+	var result = splitListToParts2(head.Next, k)
 	fmt.Printf("result length:%d\n", len(result))
 	for i := 0; i < len(result); i++ {
 		fmt.Printf("==========>node:%d\n", i)
@@ -39,13 +40,52 @@ type ListNode struct {
 	Next *ListNode
 }
 
+func splitListToParts2(head *ListNode, k int) []*ListNode {
+	var result []*ListNode
+	if head == nil {
+		for i := 0; i < k; i++ {
+			result = append(result, nil)
+		}
+		return result
+	}
+	var length int
+	var cur = head
+	for cur != nil {
+		length++
+		cur = cur.Next
+	}
+	cur = head
+	prev := head
+	step := length / k
+	mod := length % k
+	for cur != nil {
+		result = append(result, cur)
+		for i := 0; i < step; i++ {
+			prev = cur
+			cur = cur.Next
+		}
+		if mod > 0 {
+			mod--
+			prev = cur
+			cur = cur.Next
+		}
+		prev.Next = nil
+	}
+	if k > len(result) {
+		length := k - len(result)
+		for i := 0; i < length; i++ {
+			result = append(result, nil)
+		}
+	}
+	return result
+}
+
 func splitListToParts(head *ListNode, k int) []*ListNode {
 	var result []*ListNode
 	if head == nil {
 		for i := 0; i < k; i++ {
-            var node *ListNode
-            result = append(result, node)
-        }
+			result = append(result, nil)
+		}
 		return result
 	}
 	var length, mod int
@@ -89,10 +129,8 @@ func splitListToParts(head *ListNode, k int) []*ListNode {
 
 	if k > len(result) {
 		length := k - len(result)
-		fmt.Printf("length:%d\n", length)
 		for i := 0; i < length; i++ {
-			var node *ListNode
-			result = append(result, node)
+			result = append(result, nil)
 		}
 	}
 	return result

@@ -69,7 +69,7 @@ func Test_splitListToParts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := splitListToParts(tt.args.head, tt.args.k); !reflect.DeepEqual(got, tt.want) {
+			if got := splitListToParts2(tt.args.head, tt.args.k); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("splitListToParts() = %v, want %v", got, tt.want)
 			}
 		})

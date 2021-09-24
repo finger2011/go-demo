@@ -10,5 +10,7 @@ func main() {
 	// fmt.Printf("result:%v", verifyPreorder2(order))
 	// testMerge()
 	// fmt.Printf("test jump:%d\n", testJump())
-	testSplitList()
+	// testSplitList()
+	// testFindMedianSortedArrays()
+	testLRUCache()
 }
