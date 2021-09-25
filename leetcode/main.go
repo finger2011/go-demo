@@ -12,5 +12,6 @@ func main() {
 	// fmt.Printf("test jump:%d\n", testJump())
 	// testSplitList()
 	// testFindMedianSortedArrays()
-	testLRUCache()
+	// testLRUCache()
+	testMinDistance()
 }
