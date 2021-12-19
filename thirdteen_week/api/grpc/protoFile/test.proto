@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package test;
+option go_package = "../service"; 
+
+//Request格式定义
+message Request {
+  string name = 1;
+}
+//响应数据 Response格式定义 
+message Response{
+  string message = 1;
+}
+
+/*
+定义一个服务名:Chat
+其中只有名为Test的一个RPC服务
+输入是Request格式的内容，输出是Response格式的内容
+ */
+service Chat{
+  rpc Test(Request) returns (Response){}
+}

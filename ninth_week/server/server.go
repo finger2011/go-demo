@@ -6,6 +6,7 @@ import (
 	"net"
 )
 
+//ReceiveMessageByLength fix length
 func ReceiveMessageByLength(length int) {
 	listen, err := net.Listen("tcp", "127.0.0.1:9090")
 	if err != nil {
