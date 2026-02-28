@@ -10,6 +10,7 @@ func main() {
 	fmt.Println("concatenatedBinary(", n, ") ==> ", concatenatedBinary(n))
 }
 
+// 关键点：(a * b) mod m = ((a mod m) * (b mod m)) mod m
 func concatenatedBinary(n int) int {
 	var ans int
 	mod := 1000000007
