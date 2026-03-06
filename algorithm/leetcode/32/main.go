@@ -8,6 +8,9 @@ func main() {
 	fmt.Println("longestValidParentheses[", s, "] ===> ", longestValidParentheses(s))
 }
 
+// 一次遍历字符串，一次遍历stack
+// 遍历字符串，碰到匹配的左右括号则设置stack为2，有未匹配的左右括号则将stack设置为`|`表示终止，如"(()))())("的结果为22|2|(
+// 遍历stack 碰到连续的2累加，其他则中断累加，取最大的长度
 func longestValidParentheses(s string) int {
 	stack := []byte{}
 	for i := 0; i < len(s); i++ {
