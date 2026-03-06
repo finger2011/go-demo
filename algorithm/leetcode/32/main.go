@@ -3,9 +3,10 @@ package main
 import "fmt"
 
 func main() {
-	s := "(()))())("
-	// s := ")()()"
-	fmt.Println("longestValidParentheses[", s, "] ===> ", longestValidParentheses(s))
+	// s := "(()))())("
+	s := ")()()"
+	fmt.Println("longestValidParentheses [", s, "] ===> ", longestValidParentheses(s))
+	fmt.Println("longestValidParentheses2[", s, "] ===> ", longestValidParentheses2(s))
 }
 
 // 一次遍历字符串，一次遍历stack
@@ -40,10 +41,10 @@ func longestValidParentheses(s string) int {
 			}
 		}
 	}
-	fmt.Println("stack:")
-	for _, b := range stack {
-		fmt.Printf("%s", string(b))
-	}
+	// fmt.Println("stack:")
+	// for _, b := range stack {
+	// 	fmt.Printf("%s", string(b))
+	// }
 	var ops, num, ans int
 	var isInt bool
 	for ops < len(stack) {
@@ -74,4 +75,29 @@ func byteIsInt(b byte) bool {
 		return true
 	}
 	return false
+}
+
+// 保持栈底元素为最后一个未被匹配的`)`的下标，为了防止第一个字符为`(`时不匹配，需要开始写入一个-1
+// 遇到`(`则将下标压入栈
+// 遇到`)` 先弹出栈底，表示找到了匹配的`(`，如果栈空，则直接入栈，否则用当前下标减去栈底下标，是该连续合法串的长度
+// 找到其中最大长度
+func longestValidParentheses2(s string) int {
+	var ans int
+	stack := []int{}
+	stack = append(stack, -1)
+	for i := 0; i < len(s); i++ {
+		if s[i] == '(' {
+			stack = append(stack, i)
+		} else {
+			stack = stack[:len(stack)-1]
+			if len(stack) == 0 {
+				stack = append(stack, i)
+			} else {
+				if i-stack[len(stack)-1] > ans {
+					ans = i - stack[len(stack)-1]
+				}
+			}
+		}
+	}
+	return ans
 }
