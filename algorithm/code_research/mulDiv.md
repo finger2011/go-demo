@@ -44,7 +44,7 @@ function mulDiv(
         twos := add(div(sub(0, twos), twos), 1)
     }
     prod0 |= prod1 * twos;
-    uint256 inv = (3 * denominator) ^ 2;
+    uint256 inv = (3 * denominator) ^ 2; // inverse mod 2**4
     inv *= 2 - denominator * inv; // inverse mod 2**8
     inv *= 2 - denominator * inv; // inverse mod 2**16
     inv *= 2 - denominator * inv; // inverse mod 2**32
@@ -64,8 +64,8 @@ function mulDiv(
 
 ### 整体数学逻辑
 - 512位乘积拆分：利用 EVM 汇编指令 mulmod 和 mul，将 a * b 的真实 512 位结果拆分为高 256 位 (prod1) 和低 256 位 (prod0)。
-- 边界与溢出拦截：如果 prod1 == 0，说明没溢出，直接返回普通除法。如果 prod1 >= denominator，说明最终结果一定会大于 
-2<sup>256<sup> - 1（即使除完以后也会溢出 uint256 返回值），强制拦截。
+- 边界与溢出拦截：如果 prod1 == 0，说明没溢出，直接返回普通除法。如果 prod1 >= denominator，说明最终结果一定会大于$
+2^{256} - 1$（即使除完以后也会溢出 uint256 返回值），强制拦截。
 - 余数剥离：求出 (a * b) % denominator 的余数，并从 512 位数字中减去该余数，使得分子能被 denominator 绝对整除。
 - 因式分解与位移：提取 denominator 的最大 2 的幂次因子 (twos)，将分子和分母同时除以 twos。这确保了新的 denominator 是一个奇数。
 - 牛顿-拉弗森迭代求模逆元 (Newton-Raphson)：由于任何奇数与 2<sup>256</sup>都互质，因此该奇数在模 2<sup>256</sup>下必定存在乘法逆元。通过 6 次迭代求出逆元 inv。
@@ -162,9 +162,6 @@ result = prod0 * inv;
 ### 位运算获取最低位1的位置
 在底层二进制中，`-x & x` 会绝对精确地提取出 x 的最低位 1（即最大能整除该数的 2 的幂）
 
-### 魔法初始值
-对于任意奇数 d，`(3 * d) XOR 2` 的结果，必定是 d在模 16（即 2<sup>4</sup>）下的准确乘法逆元。
-
 ### CRT - 中国剩余定理 (Chinese Remainder Theorem)
 - 如果存在一组两两互质的模数，那么对于任意给定的余数，该同余线性方程必定有解；并且在模数乘积范围内，解唯一
 
@@ -187,17 +184,88 @@ result = prod0 * inv;
 #### 在代码中的作用
 将计算机底层极其昂贵且易引发精度丢失的“除法”指令，完美等效替换为极速的“乘法”指令。
 
+#### 魔法初始值
+对于任意奇数 d，`(3 * d) XOR 2` 的结果，必定是 d在模 16（即 2<sup>4</sup>）下的准确乘法逆元。
+
 #### 风险点
 - 乘法逆元并非永远存在。裴蜀定理规定：只有当 a 和模数 m 的最大公约数为 1，即 `gcd(a,m)=1`（两者互质）时，a 在模 m 下的逆元才存在，且唯一。
 - 在 EVM 中 (m=2<sup>256</sup> )的质因数只有 2。因此，只有奇数才与 2<sup></sup>互质。这也是为什么在 Uniswap 的 mulDiv 源码中，必须先用按位与提取出分母的所有 2 的幂次因子，将分母强行变成奇数后，才能安全进入牛顿迭代求解逆元。
 
 ### 牛顿-拉弗森迭代 (Newton-Raphson Iteration) 
 
-### 亨泽尔引理 (Hensel's Lemma)
+**迭代公式**：
+$$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$$
 
-### 基础欧几里得算法
+**求乘法逆元**:
+*   构建反向函数：**$f(x) = \frac{1}{x} - d = 0$**
+*   对其求导：$f'(x) = -\frac{1}{x^2}$
+*   代入牛顿迭代公式：$x_{n+1} = x_n - \frac{\frac{1}{x_n} - d}{-\frac{1}{x^2_n}} = x_n + x_n^2 \left(\frac{1}{x_n} - d\right)$
+*   化简得到最终形态：**$x_{n+1} = x_n(2 - d \cdot x_n)$**
+*   **极致优雅**：这个公式里只有乘法和减法，完全消除了除法！
+
+### 亨泽尔引理与精度翻倍 (Hensel's Lemma & Quadratic Convergence)
+在模算术中，牛顿迭代表现为“精度翻倍”。
+假设当前迭代值 $x_n$ 在模 $2^k$ 下是正确的逆元，即 $x_n \cdot d \equiv 1 \pmod{2^k}$。
+我们可以将其写为：$x_n \cdot d = 1 + c \cdot 2^k$（$c$ 为某个常数）。
+我们将 $x_{n+1}$ 乘以 $d$ 看看会发生什么：
+$x_{n+1} \cdot d = x_n(2 - d \cdot x_n) \cdot d = 2(x_n \cdot d) - (x_n \cdot d)^2$
+代入刚才的式子：
+$= 2(1 + c \cdot 2^k) - (1 + c \cdot 2^k)^2$
+$= 2 + 2c \cdot 2^k - (1 + 2c \cdot 2^k + c^2 \cdot 2^{2k})$
+$= 1 - c^2 \cdot 2^{2k}$
+得出结论：**$x_{n+1} \cdot d \equiv 1 \pmod{2^{2k}}$**。
+每一次迭代，正确的有效位数直接翻倍（从 $k$ 位变成 $2k$ 位）。
+
+#### 代码中
+有了魔法初始值`(3 * d) XOR 2`这个模 $2^4$ 的绝对正确起点，我们只需要迭代：
+*   第1次：模 $2^8$
+*   第2次：模 $2^{16}$
+*   第3次：模 $2^{32}$
+*   第4次：模 $2^{64}$
+*   第5次：模 $2^{128}$
+*   第6次：模 $2^{256}$
+刚好 6 行代码，将精度拉满到 256 位。
 
 ### 扩展欧几里得算法
+扩展欧几里得算法（Extended Euclidean Algorithm, ExGCD）是标准欧几里得算法（辗转相除法）的进阶版。
+
+它不仅用于求解两个整数 $a$ 和 $b$ 的最大公约数 $\gcd(a, b)$，**更核心的作用是同时求出裴蜀等式（Bézout's identity）$ax + by = \gcd(a, b)$ 中的整数解 $x$ 和 $y$**。
+
+---
+
+### 逻辑支撑 (CoT)
+
+<details>
+<summary>点击展开：ExGCD 的状态转移与数学推导</summary>
+
+#### 1. 降维基石：标准欧几里得 (Standard GCD)
+标准算法基于一个核心数学规律：两个数的最大公约数，等于其中较小的数与两数相除余数的最大公约数。
+即：$\gcd(a, b) = \gcd(b, a \pmod b)$。
+不断递归，直到 $b = 0$ 时，当前的 $a$ 就是最大公约数。
+
+#### 2. 状态方程推导 (State Transition)
+假设我们在进行除法运算 $a = q \cdot b + r$（其中 $q = \lfloor a/b \rfloor$，$r = a \pmod b$）。
+我们要在每一步中维护等式：$ax + by = \gcd(a, b)$。
+
+在进入下一层递归 $\gcd(b, a \pmod b)$ 时，假设我们已经求出了下一层的系数 $x_1$ 和 $y_1$，使得：
+$b \cdot x_1 + (a \pmod b) \cdot y_1 = \gcd(a, b)$
+
+将 $a \pmod b = a - q \cdot b$ 代入上式：
+$b \cdot x_1 + (a - q \cdot b) \cdot y_1 = \gcd(a, b)$
+$a \cdot y_1 + b \cdot (x_1 - q \cdot y_1) = \gcd(a, b)$
+
+与原等式 $ax + by = \gcd(a, b)$ 对比系数，得出**绝对状态转移方程**：
+*   $x = y_1$
+*   $y = x1 - \lfloor a/b \rfloor \cdot y_1$
+
+#### 3. 递归的终点 (The Base Case)
+当 $b = 0$ 时，$\gcd(a, 0) = a$。
+此时的裴蜀等式变为 $a \cdot x + 0 \cdot y = a$。
+显然，解为 $x = 1, y = 0$。这是所有状态回溯的绝对起点。
+
+</details>
+
+---
 
 ### 裴蜀定理 - Bézout's identity
 - 对于任意两个不全为零的整数 a 和 b，设它们的最大公约数为 `d = gcd(a,b)`，则必然存在整数 x 和 y，使得线性二元一次方程 `ax + by = d` 成立
