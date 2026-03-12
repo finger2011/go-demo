@@ -1,5 +1,6 @@
 ## Kruskal 算法
 Kruskal 算法是一种常见并且好写的用于求解最小生成树（Minimum Spanning Tree, MST）的贪心算法，由 Kruskal 发明．该算法的基本思想是从小到大加入边。
+https://oi-wiki.org/graph/mst/#kruskal-%E7%AE%97%E6%B3%95
 
 ### 前置知识
 
