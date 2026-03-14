@@ -13,7 +13,8 @@ func main() {
 		{10, 100},
 	}
 	for _, arr := range testArr {
-		fmt.Println("getHappyString(", arr[0], "; ", arr[1], ") ===> ", getHappyString(arr[0], arr[1]))
+		fmt.Println("getHappyString (", arr[0], "; ", arr[1], ") ===> ", getHappyString(arr[0], arr[1]))
+		fmt.Println("getHappyString2(", arr[0], "; ", arr[1], ") ===> ", getHappyString2(arr[0], arr[1]))
 	}
 
 }
@@ -44,7 +45,6 @@ func getHappyString(n int, k int) string {
 	ops := 1
 	for ops < n {
 		num >>= 1
-		fmt.Println("num:", num, "; k:", k, "; ans:", ans)
 		if num == 1 {
 			ans += dicMap[ans[ops-1]][k-1]
 			break
@@ -57,6 +57,22 @@ func getHappyString(n int, k int) string {
 		}
 		ops++
 	}
-
 	return ans
+}
+
+// 先把k减一，变成从0开始(k0 = k - 1)，那么对应的就是k0的二进制上的每位代表需要填充的
+func getHappyString2(n int, k int) string {
+	if k > 3<<(n-1) {
+		return ""
+	}
+	ans := make([]byte, n)
+	k--
+	ans[0] = 'a' + byte(k>>(n-1))
+	for i := 1; i < n; i++ {
+		ans[i] = 'a' + byte(k>>(n-1-i)&1)
+		if ans[i] >= ans[i-1] {
+			ans[i]++
+		}
+	}
+	return string(ans)
 }
