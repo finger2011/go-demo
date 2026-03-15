@@ -3,8 +3,8 @@
  
  <details>
     <summary>Uniswap V3 FullMath 库中的mulDiv函数</summary>
+
 ```solidity
-// 已去除注释部分
 function mulDiv(
     uint256 a,
     uint256 b,
@@ -55,6 +55,7 @@ function mulDiv(
     return result;
 }
 ```
+
 </details>
 
 ## 代码解读
