@@ -94,6 +94,15 @@ func (this *Fancy) GetIndex(idx int) int {
 	return ans
 }
 
+// ---------------------------------------------------------------------//
+
+// 通过保存add和mul，每次getindex时进行计算
+// add: add+inc
+// mul : add*m, mul*m
+// 同时防止溢出需要取模
+// append的时候先对val进行反运算，即(val - add) / mul,把除法转化为乘法（乘以mod的乘法逆元）
+// getindex的时候 (val+add) * mul即可
+
 type Fancy2 struct {
 	nums []int
 	add  int
