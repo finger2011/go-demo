@@ -13,6 +13,8 @@ func main() {
 	x, y, k := 0, 0, 4
 	fmt.Println("reverseSubmatrix(", grid, ", ", x, ", ", y, ", ", k, "):")
 	fmt.Println(reverseSubmatrix(grid, x, y, k))
+	fmt.Println("reverseSubmatrix2(", grid, ", ", x, ", ", y, ", ", k, "):")
+	fmt.Println(reverseSubmatrix2(grid, x, y, k))
 }
 
 func reverseSubmatrix(grid [][]int, x int, y int, k int) [][]int {
@@ -32,6 +34,18 @@ func reverseSubmatrix(grid [][]int, x int, y int, k int) [][]int {
 		}
 		copy(grid[x+i], r1)
 		copy(grid[x+k-1-i], r2)
+	}
+	return grid
+}
+
+func reverseSubmatrix2(grid [][]int, x, y, k int) [][]int {
+	l, r := x, x+k-1
+	for l < r {
+		for j := y; j < y+k; j++ {
+			grid[l][j], grid[r][j] = grid[r][j], grid[l][j]
+		}
+		l++
+		r--
 	}
 	return grid
 }
