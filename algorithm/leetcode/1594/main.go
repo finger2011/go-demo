@@ -10,42 +10,35 @@ func main() {
 	fmt.Println("maxProductPath(", grid, ") ==> ", maxProductPath(grid))
 }
 
+// dfs[i][j] = max(dfs[i - 1][j] * grid[i][j], dfs[i][j - 1] * grid[i][j]) 注意负数的情况
 func maxProductPath(grid [][]int) int {
 	const mod = 1000000007
 	m, n := len(grid), len(grid[0])
-	mem := make([][][2]int, m)
-	for i := range mem {
-		mem[i] = make([][2]int, n)
-		for j := range mem[i] {
-			mem[i][j] = [2]int{math.MinInt, math.MinInt}
+	mem := make([][2]int, n)
+	for i := range m {
+		for j := range n {
+			x := grid[i][j]
+			if i == 0 && j == 0 {
+				mem[j] = [2]int{x, x}
+				continue
+			}
+			ansMin, ansMax := math.MaxInt, math.MinInt
+			if i > 0 {
+				mMin, mMax := mem[j][0], mem[j][1]
+				ansMin = min(x*mMin, x*mMax)
+				ansMax = max(x*mMin, x*mMax)
+			}
+			if j > 0 {
+				mMin, mMax := mem[j-1][0], mem[j-1][1]
+				ansMin = min(ansMin, x*mMin, x*mMax)
+				ansMax = max(ansMax, x*mMin, x*mMax)
+			}
+			mem[j] = [2]int{ansMin, ansMax}
 		}
 	}
-	var dfs func(i, j int) (int, int)
-	dfs = func(i, j int) (int, int) {
-		x := grid[i][j]
-		if i == 0 && j == 0 {
-			return x, x
-		}
-		if mem[i][j][0] != math.MinInt {
-			return mem[i][j][0], mem[i][j][1]
-		}
-		ansMin, ansMax := math.MaxInt, math.MinInt
-		if i > 0 {
-			mMin, mMax := dfs(i-1, j)
-			ansMin = min(x*mMin, x*mMax)
-			ansMax = max(x*mMin, x*mMax)
-		}
-		if j > 0 {
-			mMin, mMax := dfs(i, j-1)
-			ansMin = min(ansMin, x*mMin, x*mMax)
-			ansMax = max(ansMax, x*mMin, x*mMax)
-		}
-		mem[i][j] = [2]int{ansMin, ansMax}
-		return ansMin, ansMax
+	ans := mem[n-1][1]
+	if ans < 0 {
+		return -1
 	}
-	_, ans := dfs(m-1, n-1)
-	if ans >= 0 {
-		return ans % mod
-	}
-	return -1
+	return ans % mod
 }
