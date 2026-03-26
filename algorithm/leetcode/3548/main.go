@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 type MyTest struct {
 	grid   [][]int
@@ -11,7 +14,7 @@ func main() {
 	tests := []MyTest{
 		{
 			grid:   [][]int{{1, 2, 4}, {2, 3, 5}},
-			except: true,
+			except: false,
 		},
 		{
 			grid:   [][]int{{10, 5, 4, 5}},
@@ -45,12 +48,74 @@ func main() {
 	for i, test := range tests {
 		fmt.Println("test[", i, "]:")
 		fmt.Println("grid:", test.grid)
-		if canPartitionGrid(test.grid) == test.except {
-			fmt.Println("success")
+		if canPartitionGrid2(test.grid) == test.except {
+			fmt.Println("============================success")
 		} else {
-			fmt.Println("failed")
+			fmt.Println("============================failed")
 		}
 	}
+}
+
+func canPartitionGrid2(grid [][]int) bool {
+	var total int
+	for _, row := range grid {
+		for _, n := range row {
+			total += n
+		}
+	}
+	check := func(a [][]int) bool {
+		m, n := len(a), len(a[0])
+		var delta int
+		checkPre := func() bool {
+			hasNum := map[int]bool{0: true}
+			sum := 0
+			for i, row := range a[:m-1] {
+				for j, num := range row {
+					sum += num
+					if i > 0 || j == 0 || j == n-1 {
+						hasNum[num] = true
+					}
+				}
+				delta = 2*sum - total
+				if n == 1 {
+					if delta == 0 || delta == a[0][0] || delta == row[0] {
+						return true
+					}
+					continue
+				}
+				if hasNum[delta] {
+					return true
+				}
+				if i == 0 {
+					for _, num := range row {
+						hasNum[num] = true
+					}
+				}
+			}
+			return false
+		}
+		if checkPre() {
+			return true
+		}
+		slices.Reverse(a)
+		return checkPre()
+	}
+	return check(grid) || check(rotate(grid))
+}
+
+// 顺时针旋转矩阵 90°
+func rotate(a [][]int) [][]int {
+	m, n := len(a), len(a[0])
+	b := make([][]int, n)
+	for i := range b {
+		b[i] = make([]int, m)
+	}
+	for i, row := range a {
+		for j, x := range row {
+			b[j][m-1-i] = x
+		}
+	}
+	return b
 }
 
 func canPartitionGrid(grid [][]int) bool {
