@@ -29,41 +29,31 @@ func main() {
 
 func robotSim(commands []int, obstacles [][]int) int {
 	var ans int
-	x, y := 0, 0
-	direct := 0
-	type pair struct{ x, y int }
-	obstacleMap := make(map[pair]bool, len(obstacles))
+	direct := [4][2]int{{0, 1}, {1, 0}, {0, -1}, {-1, 0}}
+	x, y, d := 0, 0, 0
+	const n = 60001
+	obstacleMap := make(map[int]bool, len(obstacles))
 	for _, ob := range obstacles {
-		obstacleMap[pair{ob[0], ob[1]}] = true
+		obstacleMap[ob[0]*n+ob[1]] = true
 	}
 	for _, command := range commands {
 		if command == -2 {
-			direct = (direct + 4 - 1) % 4
+			d = (d + 4 - 1) % 4
 			continue
 		}
 		if command == -1 {
-			direct = (direct + 1) % 4
+			d = (d + 1) % 4
 			continue
 		}
-		var op int
-		switch direct {
-		case 0:
-			for op = range command {
-				if obstacleMap[pair{x, y + op}] {
-
-				}
+		for range command {
+			if obstacleMap[(x+direct[d][0])*n+y+direct[d][1]] {
+				break
 			}
-			y += command
-		case 1:
-			x += command
-		case 2:
-			y -= command
-		case 3:
-			x -= command
+			x += direct[d][0]
+			y += direct[d][1]
+
 		}
-		if x*x+y*y > ans {
-			ans = x*x + y*y
-		}
+		ans = max(ans, x*x+y*y)
 	}
 	return ans
 }
