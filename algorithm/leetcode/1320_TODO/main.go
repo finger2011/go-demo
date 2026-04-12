@@ -20,7 +20,7 @@ func main() {
 	}
 	for _, test := range tests {
 		fmt.Println("======================start")
-		fmt.Println("nums:", test.word)
+		fmt.Println("word:", test.word)
 		ans := minimumDistance2(test.word)
 		fmt.Println("return:", ans)
 		fmt.Println("result:", ans == test.except)
