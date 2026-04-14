@@ -34,7 +34,7 @@ func main() {
 		fmt.Println("======================start")
 		fmt.Println("robot:", test.robot)
 		fmt.Println("factory:", test.factory)
-		ans := minimumTotalDistance(test.robot, test.factory)
+		ans := minimumTotalDistance3(test.robot, test.factory)
 		fmt.Println("return:", ans)
 		fmt.Println("result:", ans == test.except)
 		fmt.Println("======================end")
@@ -92,6 +92,7 @@ func minimumTotalDistance(robot []int, factory [][]int) int64 {
 	return ans
 }
 
+// n*m*m + nlogn + mlogm
 func minimumTotalDistance2(robot []int, factory [][]int) int64 {
 	n, m := len(robot), len(factory)
 	slices.Sort(robot)
@@ -137,4 +138,33 @@ func abs(x int) int {
 		return -x
 	}
 	return x
+}
+
+func minimumTotalDistance3(robot []int, factory [][]int) int64 {
+	n, m := len(robot), len(factory)
+	slices.Sort(robot)
+	slices.SortFunc(factory, func(x, y []int) int {
+		return x[0] - y[0]
+	})
+	memo := make([][]int, m+1)
+	for i := range memo {
+		memo[i] = make([]int, n+1)
+	}
+	for j := range n {
+		memo[0][j+1] = math.MaxInt / 2
+	}
+	for i, fac := range factory {
+		pos, num := fac[0], fac[1]
+		for j := range n {
+			tmp := memo[i][j+1]
+			sum := 0
+			for k := j; k >= max(j-num+1, 0); k-- {
+				sum += abs(robot[k] - pos)
+				tmp = min(tmp, memo[i][k]+sum)
+			}
+			memo[i+1][j+1] = tmp
+		}
+	}
+
+	return int64(memo[m][n])
 }
