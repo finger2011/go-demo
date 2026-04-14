@@ -40,3 +40,21 @@ func closestTarget(words []string, target string, startIndex int) int {
 	}
 	return ans
 }
+
+func closestTarget2(words []string, target string, startIndex int) int {
+	n := len(words)
+	ans := n
+	for i, word := range words {
+		if word == target {
+			d := i - startIndex
+			if d < 0 {
+				d = -d
+			}
+			ans = min(ans, d, n-d)
+		}
+	}
+	if ans == n {
+		return -1
+	}
+	return ans
+}
