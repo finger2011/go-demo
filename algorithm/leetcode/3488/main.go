@@ -60,7 +60,8 @@ func solveQueries(nums []int, queries []int) []int {
 			ans[pos[0]] = dis2
 		}
 		ans[i] = min(dis1, dis2)
-		numMap[num] = [2]int{pos[0], i}
+		pos[1] = i
+		numMap[num] = pos
 	}
 	qAns := make([]int, len(queries))
 	for i, pos := range queries {
