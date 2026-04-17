@@ -30,27 +30,16 @@ func main() {
 
 func findMedianSortedArrays(nums1 []int, nums2 []int) float64 {
 	// m, n := len(nums1), len(nums2)
-	// if m < n {
+	// if m > n {
 	// 	m, n = n, m
 	// 	nums1, nums2 = nums2, nums1
 	// }
-	// var isOdd bool
-	// if (m+n)%2 != 0 {
-	// 	isOdd = true
-	// 	if nums1[m-1] > nums2[n-1] {
-	// 		nums1 = append(nums1, math.MaxInt)
-	// 		m++
-	// 	} else {
-	// 		nums2 = append(nums2, math.MaxInt)
-	// 		n++
-	// 	}
-	// }
-	// length := (m + n) / 2
+	// length := (m + n + 1) / 2
 	// start, end := 0, m-1
-	// for {
-	// 	mid := (start + end) / 2
-	// 	mid2 := length - mid
+	// if (m + n) % 2 == 0 {
+
 	// }
+	return float64(0)
 }
 
 // 时间复杂度为O(m+n), 不符合题意
