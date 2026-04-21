@@ -7,7 +7,23 @@ import (
 func main() {
 	nums1 := []int{30, 29, 19, 5}
 	nums2 := []int{25, 25, 25, 25, 25}
-	fmt.Println("dis:", maxDistance(nums1, nums2))
+	fmt.Println("dis:", maxDistance2(nums1, nums2))
+}
+
+// 双指针
+func maxDistance2(nums1 []int, nums2 []int) int {
+	var ans, i, j int
+	m, n := len(nums1), len(nums2)
+	for i < m && j < n {
+		for ; i < m && nums2[j] < nums1[i]; i++ {
+		}
+		if i >= m {
+			break
+		}
+		ans = max(ans, j-i)
+		j++
+	}
+	return ans
 }
 
 func maxDistance(nums1 []int, nums2 []int) int {
