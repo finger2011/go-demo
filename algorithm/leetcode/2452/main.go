@@ -4,12 +4,17 @@ import "fmt"
 
 func main() {
 	// "word","note","wood"
-	queries := []string{"word", "note", "ants", "wood"}
-	dictionary := []string{"wood", "joke", "moat"}
+	// queries := []string{"word", "note", "ants", "wood"}
+	// dictionary := []string{"wood", "joke", "moat"}
+
+	// "afcb"
+	queries := []string{"afcb", "covd", "npfq"}
+	dictionary := []string{"knfl", "ahcb", "kxvs"}
 	fmt.Println("twoEditWords:", twoEditWords(queries, dictionary))
+	fmt.Println("twoEditWords2:", twoEditWords2(queries, dictionary))
 }
 
-// 暴力
+// 暴力 时间: O(qkn), q=queries长度 k=dictionary长度 n=单词长度； 空间:O(1)
 func twoEditWords(queries []string, dictionary []string) []string {
 	var ans []string
 	for _, q := range queries {
@@ -29,6 +34,58 @@ func twoEditWords(queries []string, dictionary []string) []string {
 				ans = append(ans, q)
 				break
 			}
+		}
+	}
+	return ans
+}
+
+// 字典树
+type dic struct {
+	child [26]*dic
+	isEnd bool
+}
+
+func (d *dic) insert(word string) {
+	node := d
+	for _, c := range word {
+		idx := c - 'a'
+		if node.child[idx] == nil {
+			node.child[idx] = &dic{}
+		}
+		node = node.child[idx]
+	}
+	node.isEnd = true
+}
+
+var root = &dic{}
+
+func dfs(word string, i, cnt int, node *dic) bool {
+	if cnt > 2 || node == nil {
+		return false
+	}
+	if i >= len(word) {
+		return node.isEnd
+	}
+	idx := word[i] - 'a'
+	for j, n := range node.child {
+		if idx == byte(j) && dfs(word, i+1, cnt, n) {
+			return true
+		}
+		if cnt < 2 && dfs(word, i+1, cnt+1, n) {
+			return true
+		}
+	}
+	return false
+}
+
+func twoEditWords2(queries []string, dictionary []string) []string {
+	var ans []string
+	for _, d := range dictionary {
+		root.insert(d)
+	}
+	for _, q := range queries {
+		if dfs(q, 0, 0, root) {
+			ans = append(ans, q)
 		}
 	}
 	return ans
