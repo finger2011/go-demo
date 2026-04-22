@@ -39,7 +39,6 @@ func twoEditWords(queries []string, dictionary []string) []string {
 	return ans
 }
 
-// 字典树
 type dic struct {
 	child [26]*dic
 	isEnd bool
@@ -57,29 +56,34 @@ func (d *dic) insert(word string) {
 	node.isEnd = true
 }
 
-var root = &dic{}
-
-func dfs(word string, i, cnt int, node *dic) bool {
-	if cnt > 2 || node == nil {
-		return false
-	}
-	if i >= len(word) {
-		return node.isEnd
-	}
-	idx := word[i] - 'a'
-	for j, n := range node.child {
-		if idx == byte(j) && dfs(word, i+1, cnt, n) {
-			return true
-		}
-		if cnt < 2 && dfs(word, i+1, cnt+1, n) {
-			return true
-		}
-	}
-	return false
-}
-
+// 字典树
+// 时间:  k= dictionary长度 n=单词长度 q = queries长度
+// 1. 建字典树需要 O(kn)
+// 2. 查询对每一个字母有不修改1种，修改最多26种, 最多修改两次，q*n*n*25*25
+// 所以总的时间复杂度为O(kn+q*n*n*25*25)
+// 空间：O(kn) 字典树空间为kn，
 func twoEditWords2(queries []string, dictionary []string) []string {
 	var ans []string
+	var root = &dic{}
+	var dfs func(word string, i, cnt int, node *dic) bool
+	dfs = func(word string, i, cnt int, node *dic) bool {
+		if cnt > 2 || node == nil {
+			return false
+		}
+		if i >= len(word) {
+			return node.isEnd
+		}
+		idx := word[i] - 'a'
+		for j, n := range node.child {
+			if idx == byte(j) && dfs(word, i+1, cnt, n) {
+				return true
+			}
+			if cnt < 2 && dfs(word, i+1, cnt+1, n) {
+				return true
+			}
+		}
+		return false
+	}
 	for _, d := range dictionary {
 		root.insert(d)
 	}
