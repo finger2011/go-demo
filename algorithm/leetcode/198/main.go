@@ -42,4 +42,19 @@ func rob2(nums []int) int {
 	return memo[n-1]
 }
 
-// memo退化为常量
+// memo退化为常量滚动数组
+func rob3(nums []int) int {
+	n := len(nums)
+	if n == 0 {
+		return 0
+	}
+	if n == 1 {
+		return nums[0]
+	}
+	f0 := nums[0]
+	f1 := max(nums[0], nums[1])
+	for i := 2; i < n; i++ {
+		f0, f1 = f1, max(f1, f0+nums[i])
+	}
+	return f1
+}
