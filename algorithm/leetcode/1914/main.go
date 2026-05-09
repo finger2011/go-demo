@@ -11,9 +11,7 @@ func main() {
 func rotateGrid(grid [][]int, k int) [][]int {
 	m, n := len(grid), len(grid[0])
 	for i := 0; i < m/2 && i < n/2; i++ {
-
 		sum := 2 * (m + n - 2 - 4*i)
-		fmt.Println("i:", i, "; sum:", sum)
 		ops := k % sum
 		if ops == 0 {
 			continue
@@ -36,9 +34,7 @@ func rotateGrid(grid [][]int, k int) [][]int {
 			nums[op] = grid[j][i]
 			op++
 		}
-		fmt.Println("nums:", nums)
 		nums = append(nums[sum-ops:], nums[:sum-ops]...)
-		fmt.Println("nums:", nums)
 
 		op = 0
 		for j := i; j < n-i; j++ {
