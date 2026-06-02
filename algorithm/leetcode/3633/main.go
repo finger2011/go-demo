@@ -6,6 +6,26 @@ func main() {
 
 }
 
+func earliestFinishTime(landStartTime []int, landDuration []int,
+	waterStartTime []int, waterDuration []int) int {
+
+	return min(finish(landStartTime, landDuration, waterStartTime, waterDuration),
+		finish(waterStartTime, waterDuration, landStartTime, landDuration))
+}
+
+func finish(landStartTime []int, landDuration []int,
+	waterStartTime []int, waterDuration []int) int {
+	minFinish, ans := math.MaxInt, math.MaxInt
+	for i := range landStartTime {
+		minFinish = min(minFinish, landStartTime[i]+landDuration[i])
+	}
+	for i := range waterStartTime {
+		ans = min(ans, max(minFinish, waterStartTime[i])+waterDuration[i])
+	}
+	return ans
+}
+
+// 暴力双重遍历 n*m
 func earliestFinishTime2(landStartTime []int, landDuration []int,
 	waterStartTime []int, waterDuration []int) int {
 
@@ -13,6 +33,9 @@ func earliestFinishTime2(landStartTime []int, landDuration []int,
 	for i := range n {
 		for j := range m {
 			tmp := landStartTime[i] + landDuration[i]
+			if tmp >= ans || tmp+waterDuration[j] >= ans {
+				continue
+			}
 			if waterStartTime[j] >= tmp {
 				tmp = waterStartTime[j] + waterDuration[j]
 			} else {
@@ -24,6 +47,9 @@ func earliestFinishTime2(landStartTime []int, landDuration []int,
 	for j := range m {
 		for i := range n {
 			tmp := waterStartTime[j] + waterDuration[j]
+			if tmp >= ans || tmp+landDuration[i] >= ans {
+				continue
+			}
 			if landStartTime[i] >= tmp {
 				tmp = landStartTime[i] + landDuration[i]
 			} else {
