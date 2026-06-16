@@ -85,6 +85,7 @@ func createBinaryTree(descriptions [][]int) *TreeNode {
 	return createNode(rootNum)
 }
 
+// 利用2次异或来判断，在child和paraent中只出现一次的即为根节点的数值
 func createBinaryTree2(descriptions [][]int) *TreeNode {
 	n := len(descriptions)
 	var rootNum int
